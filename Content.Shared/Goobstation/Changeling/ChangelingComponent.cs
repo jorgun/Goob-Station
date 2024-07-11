@@ -111,6 +111,12 @@ public sealed partial class ChangelingComponent : Component
 
     [DataField, ViewVariables(VVAccess.ReadWrite)]
     public ProtoId<StatusIconPrototype> StatusIcon { get; set; } = "HivemindFaction";
+    /// <summary>
+    ///     Index of dna's that have been stolen
+    /// </summary>
+    [ViewVariables(VVAccess.ReadOnly)]
+    public List<TransformData> AbsorbedDNAHistory = new();
+
 }
 
 [DataDefinition]

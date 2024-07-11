@@ -325,9 +325,18 @@ public sealed partial class ChangelingSystem : EntitySystem
 
         return true;
     }
-
-    public void AddDNA(EntityUid uid, ChangelingComponent comp, TransformData data, bool countObjective = false)
+    public bool DNAHistory(EntityUid uid, ChangelingComponent comp, TransformData data)//AbsorbedDNAHistory
     {
+        foreach (var storedDNA in comp.AbsorbedDNAHistory)
+        {
+            if ((storedDNA.DNA != null) && storedDNA.DNA == data.DNA)
+                return false;
+        }
+        comp.AbsorbedDNAHistory.Add(data);
+        return true;
+    }
+    public void AddDNA(EntityUid uid, ChangelingComponent comp, TransformData data, bool countObjective = false)
+        {
         if (comp.AbsorbedDNA.Count >= comp.MaxAbsorbedDNA)
         {
             comp.AbsorbedDNA.RemoveAt(0);
@@ -340,6 +349,7 @@ public sealed partial class ChangelingSystem : EntitySystem
             if (_mind.TryGetMind(uid, out var mindId, out var mind))
                 if (_mind.TryGetObjectiveComp<StealDNAConditionComponent>(mindId, out var objective, mind))
                     objective.DNAStolen += 1;
+                    comp.TotalStolenDNA++;
         }
     }
     public bool TryStealDNA(EntityUid uid, EntityUid target, ChangelingComponent comp, bool countObjective = false)
@@ -366,7 +376,7 @@ public sealed partial class ChangelingSystem : EntitySystem
         if (fingerprint.Fingerprint != null)
             data.Fingerprint = fingerprint.Fingerprint;
 
-        AddDNA(uid, comp, data, countObjective);
+        AddDNA(uid, comp, data, DNAHistory(uid, comp, data));
 
         return true;
     }
@@ -416,7 +426,7 @@ public sealed partial class ChangelingSystem : EntitySystem
             AddComp(newUid.Value, lingCompCopy, true);
             var newLingComp = Comp<ChangelingComponent>(newUid.Value);
 
-            newLingComp.AbsorbedDNA = comp.AbsorbedDNA;
+            TransferLingComp(comp,newLingComp);
             newLingComp.CurrentForm = data != null ? data : newLingComp.CurrentForm;
             newLingComp.IsInLesserForm = false;
             if (!persistentDna && data != null)
@@ -484,7 +494,15 @@ public sealed partial class ChangelingSystem : EntitySystem
 
         return true;
     }
-
+    public void TransferLingComp(ChangelingComponent comp, ChangelingComponent newComp)
+    {
+        if(comp==null||newComp==null)
+            return;
+        newComp.TotalStolenDNA = comp.TotalStolenDNA;
+        newComp.TotalAbsorbedEntities = comp.TotalAbsorbedEntities;
+        newComp.AbsorbedDNA = comp.AbsorbedDNA;
+        newComp.AbsorbedDNAHistory = comp.AbsorbedDNAHistory;
+    }
     #endregion
 
     #region Event Handlers
@@ -587,7 +605,6 @@ public sealed partial class ChangelingSystem : EntitySystem
         }
         TryStealDNA(uid, target, comp, true);
         comp.TotalAbsorbedEntities++;
-        comp.TotalStolenDNA++;
 
         _popup.PopupEntity(popup, args.User, args.User);
         comp.MaxChemicals += bonusChemicals;
@@ -1020,7 +1037,7 @@ public sealed partial class ChangelingSystem : EntitySystem
             comp.Chemicals += Comp<ChangelingActionComponent>(args.Action).ChemicalCost;
             return;
         }
-
+        TransferLingComp(comp,Comp<ChangelingComponent>(newUid.Value));
         PlayMeatySound((EntityUid) newUid, comp);
         var loc = Loc.GetString("changeling-transform-others", ("user", Identity.Entity((EntityUid) newUid, EntityManager)));
         _popup.PopupEntity(loc, (EntityUid) newUid, PopupType.LargeCaution);
