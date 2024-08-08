@@ -253,8 +253,8 @@
       implant: MindShieldImplant
 
 - type: entity
-  id: lifesaverImplanter
-  name: Life saver implanter
+  id: LifeSaverImplanter
+  name: life saver implanter
   parent: BaseImplantOnlyImplanter
   components:
     - type: Implanter

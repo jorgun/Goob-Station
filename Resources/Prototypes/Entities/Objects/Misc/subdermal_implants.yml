@@ -326,7 +326,6 @@
      tags:
        - MindShield
 
-
 - type: entity
   parent: BaseSubdermalImplant
   id: LifeSaverImplant
@@ -334,23 +333,24 @@
   description: This implant tries to save life.
   categories: [ HideSpawnMenu ]
   components:
-    - type: SubdermalImplant
-      whitelist:
-        components:
-        - MobState
-    - type: TriggerOnMobstateChange
-      mobState:
-      - Critical
-    - type: SolutionContainerManager
-      solutions:
-        drink:
-          maxVol: 20
-          reagents:
-          - ReagentId: Omnizine
-            Quantity: 20
-    - type: SolutionInjectOnTrigger
-      solution: drink
-      transferAmount: 20
-    - type: DeleteOnSolutionEmpty
-      solution: drink
-
+  - type: SubdermalImplantsssssss
+    whitelist:
+      components:
+      - MobState
+  - type: TriggerOnMobstateChange
+    mobState:
+    - Critical
+  - type: SolutionContainerManager
+    solutions:
+      drink:
+        maxVol: 20
+        reagents:
+        - ReagentId: Omnizine
+          Quantity: 10
+        - ReagentId: Epinephrine
+          Quantity: 10
+  - type: SolutionInjectOnTrigger
+    solution: drink
+    transferAmount: 20
+  - type: DeleteOnSolutionEmpty
+    solution: drink
